@@ -71,6 +71,7 @@ st.sidebar.header("Image Enhancement Options")
 use_night_mode = st.sidebar.checkbox("Enable Night Mode (CLAHE)", value=False)
 gamma_value = st.sidebar.slider("Gamma Correction", 0.5, 3.0, 1.0, 0.1)
 show_debug = st.sidebar.checkbox("Show Debug View (Thresholding)", value=True)
+show_segmentation = st.sidebar.checkbox("Show Face Segmentation (Eyes & Mouth)", value=True)
 
 # Initialization
 if 'run' not in st.session_state:
@@ -111,7 +112,12 @@ with col2:
 # Counterssss
 COUNTER = 0
 ALARM_ON = False
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
+
+# Check if camera opened successfully
+if not cap.isOpened():
+    st.error("Failed to open camera. Make sure a camera is connected and available.")
+    st.stop()
 
 # --- PROCESSING LOOP ---
 while st.session_state['run']:
@@ -160,9 +166,10 @@ while st.session_state['run']:
         rightEyeHull = cv2.convexHull(rightEye)
         mouthHull = cv2.convexHull(mouth)
         
-        cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
-        cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
-        cv2.drawContours(frame, [mouthHull], -1, (255, 0, 0), 1)
+        if show_segmentation:
+            cv2.drawContours(frame, [leftEyeHull], -1, (0, 255, 0), 1)
+            cv2.drawContours(frame, [rightEyeHull], -1, (0, 255, 0), 1)
+            cv2.drawContours(frame, [mouthHull], -1, (255, 0, 0), 1)
 
         # 7. Classification Logic 
         if ear < EAR_THRESHOLD:
